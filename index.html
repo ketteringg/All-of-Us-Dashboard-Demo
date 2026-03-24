@@ -597,7 +597,7 @@ function App() {
     <div className="main-wrap">
       <div className="banner">⚠ SIMULATED OUTPUT — Fake data for demonstration only. Not real participant data. Tables are limited to {MAX_DEMO_ROWS} rows in this demo; the live dashboard supports unlimited rows.</div>
 
-      <div className="two-col" style={{ gap: "14px", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
         <div className="card">
           <div className="card-title">Filters</div>
           <div className="field-group">
@@ -675,7 +675,7 @@ function App() {
           </div>
 
           {/* Cohort + Sex */}
-          <div className="two-col" style={{ alignItems: "flex-start" }}>
+          <div>
             <div>
               <div className="section-hdr">Cohort Counts</div>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -706,7 +706,7 @@ function App() {
           </div>
 
           {/* Conditions + Individuals */}
-          <div className="two-col" style={{ alignItems: "flex-start" }}>
+          <div>
             <div>
               <div className="section-hdr">
                 Conditions (top {results.conditions.length} · prevalence ≥ {cutoff}% · sorted by individuals)
@@ -743,8 +743,8 @@ function App() {
 
           {/* Demographics */}
           <div className="section-hdr">Demographics</div>
-          <div className="two-col">
-            <div className="card">
+          <div>
+            <div className="card" style={{ marginBottom: 14 }}>
               <BarChart
                 id="raceChart"
                 title="Race Distribution (Unique Individuals)"
