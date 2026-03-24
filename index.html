@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cohort Dashboard Demo — Baldridge Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --crimson: #a51417;
+    --crimson-dark: #8b1114;
+    --navy: #1a2e4a;
+    --accent: #2563a8;
+    --accent-lt: #dbeafe;
+    --border: #cbd5e1;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-dim: #64748b;
+    --success: #15803d;
+    --font-serif: 'Source Serif 4', Georgia, serif;
+    --font-sans: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+    --teal-1: #003333; --teal-2: #004d4d; --teal-3: #006666; --teal-4: #008080;
+    --warm-1: #7a2800; --warm-2: #cc4400; --warm-3: #ff7519;
+  }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .app-header {
+    background: var(--crimson);
+    color: white;
+    padding: 20px 28px;
+    border-bottom: 4px solid var(--crimson-dark);
+  }
+  .app-header h1 {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .app-header .subtitle {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 4px;
+    font-weight: 300;
+  }
+  .app-header .authors {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    padding-top: 8px;
+  }
+  .main-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+  .banner {
+    background: #fef9c3;
+    border: 1.5px solid #ca8a04;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .section-hdr {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    font-family: var(--font-sans);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 5px;
+    margin: 18px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    background: var(--surface);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .field-group { margin-bottom: 12px; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .field-tip {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  select, input[type="number"] {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 8px;
+    background: white;
+    color: var(--text);
+    outline: none;
+  }
+  select:focus, input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-lt);
+  }
+  .toggle-group { display: flex; gap: 0; }
+  .toggle-btn {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-btn:first-child { border-radius: 4px 0 0 4px; }
+  .toggle-btn:last-child { border-radius: 0 4px 4px 0; }
+  .toggle-btn:not(:first-child) { border-left: none; }
+  .toggle-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .toggle-btn.active + .toggle-btn { border-left: 1px solid var(--accent); }
+  .run-btn {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 22px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .run-btn:hover { background: var(--navy); }
+  .run-btn:active { transform: scale(0.98); }
+  .reset-btn {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 18px;
+    cursor: pointer;
+  }
+  .reset-btn:hover { background: #4b5563; }
+  .status-text { font-size: 12px; color: var(--text-dim); }
+  .status-done { color: var(--success); }
+  .pill {
+    display: inline-block;
+    background: var(--accent-lt);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--navy);
+    margin: 0 6px 6px 0;
+  }
+  .pill b { margin-right: 4px; }
+  .stat-card {
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 12px 20px;
+    background: var(--surface);
+    text-align: center;
+    min-width: 140px;
+  }
+  .stat-number {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .stat-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  table { border-collapse: collapse; width: 100%; }
+  thead th {
+    background: var(--navy);
+    color: white;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  tbody td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  tbody tr:nth-child(even) td { background: var(--bg); }
+  tbody tr:hover td { background: var(--accent-lt); }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .two-col { display: flex; gap: 20px; flex-wrap: wrap; }
+  .two-col > * { flex: 1; min-width: 280px; }
+  .controls-row {
+    display: flex; gap: 14px; align-items: center;
+    margin: 14px 0 6px;
+    flex-wrap: wrap;
+  }
+  canvas { max-width: 100%; }
+  @media (max-width: 700px) {
+    .two-col { flex-direction: column; }
+    .app-header h1 { font-size: 18px; }
+  }
+  .loading-bar {
+    height: 3px;
+    background: var(--accent-lt);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+  .loading-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: load 1.8s ease-in-out;
+  }
+  @keyframes load {
+    0% { width: 0%; }
+    30% { width: 45%; }
+    70% { width: 80%; }
+    100% { width: 100%; }
+  }
+  .fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>An Interactive Cohort Dashboard for Rare Variant Genotype-Phenotype Analysis in the All of Us Research Program</h1>
+  <div class="subtitle">All of Us Controlled Tier — Variant phenotype explorer (Simulated Demo)</div>
+  <div class="authors">Gabriel Kettering, Caitlyn Chitwood, Dustin Baldridge &nbsp;|&nbsp; Baldridge Lab, Institute for Informatics, Data Science &amp; Biostatistics (I2DB), WashU Medicine</div>
+</div>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
+
+// ── Fake variant data ──────────────────────────────────────────────────
+const MAX_DEMO_ROWS = 25;
+const VARIANTS = {
+  "Fake Variant 1": {
+    fullCohort: 284,
+    conditions: [
+      { name: "Essential hypertension", occ: 187, indiv: 142 },
+      { name: "Type 2 diabetes mellitus", occ: 154, indiv: 118 },
+      { name: "Major depressive disorder", occ: 143, indiv: 109 },
+      { name: "Hyperlipidemia", occ: 121, indiv: 97 },
+      { name: "Gastroesophageal reflux disease", occ: 98, indiv: 84 },
+      { name: "Generalized anxiety disorder", occ: 87, indiv: 76 },
+      { name: "Obstructive sleep apnea", occ: 79, indiv: 71 },
+      { name: "Obesity", occ: 74, indiv: 68 },
+      { name: "Chronic low back pain", occ: 71, indiv: 65 },
+      { name: "Allergic rhinitis", occ: 68, indiv: 63 },
+      { name: "Asthma", occ: 55, indiv: 51 },
+      { name: "Hypothyroidism", occ: 49, indiv: 44 },
+      { name: "Vitamin D deficiency", occ: 44, indiv: 39 },
+      { name: "Iron deficiency anemia", occ: 41, indiv: 36 },
+      { name: "Chronic kidney disease", occ: 38, indiv: 33 },
+      { name: "Osteoarthritis", occ: 35, indiv: 31 },
+      { name: "Migraine", occ: 32, indiv: 28 },
+      { name: "Atrial fibrillation", occ: 29, indiv: 25 },
+      { name: "Peripheral neuropathy", occ: 26, indiv: 22 },
+      { name: "Coronary artery disease", occ: 24, indiv: 20 },
+      { name: "Chronic obstructive pulmonary disease", occ: 21, indiv: 18 },
+      { name: "Heart failure", occ: 19, indiv: 16 },
+      { name: "Urinary tract infection", occ: 17, indiv: 14 },
+      { name: "Hepatic steatosis", occ: 15, indiv: 12 },
+      { name: "Benign prostatic hyperplasia", occ: 13, indiv: 11 },
+    ],
+    sex: { Female: 138, Male: 97, "No matching concept": 6 },
+    race: { White: 108, "Black or African American": 61, Asian: 21, "None Indicated": 12 },
+    ethnicity: { "Not Hispanic": 189, "Hispanic/Latino": 43, Unknown: 9 },
+    individuals: [
+      { id: 1002847, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 24 },
+      { id: 2019384, race: "White", eth: "Not Hispanic", sex: "Male", ev: 21 },
+      { id: 3047291, race: "White", eth: "Hispanic or Latino", sex: "Female", ev: 19 },
+      { id: 1837465, race: "White", eth: "Not Hispanic", sex: "Female", ev: 17 },
+      { id: 4029183, race: "Asian", eth: "Not Hispanic", sex: "Male", ev: 16 },
+      { id: 2938471, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 15 },
+      { id: 1029384, race: "White", eth: "Not Hispanic", sex: "Female", ev: 14 },
+      { id: 3847291, race: "None Indicated", eth: "Not Hispanic", sex: "Female", ev: 13 },
+      { id: 2019475, race: "White", eth: "Not Hispanic", sex: "Male", ev: 12 },
+      { id: 4837261, race: "Black or African American", eth: "Hispanic or Latino", sex: "Female", ev: 11 },
+      { id: 5928374, race: "White", eth: "Not Hispanic", sex: "Male", ev: 10 },
+      { id: 6019283, race: "Asian", eth: "Not Hispanic", sex: "Female", ev: 10 },
+      { id: 7120394, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 9 },
+      { id: 8231405, race: "White", eth: "Hispanic or Latino", sex: "Female", ev: 9 },
+      { id: 9342516, race: "White", eth: "Not Hispanic", sex: "Male", ev: 8 },
+      { id: 1453627, race: "None Indicated", eth: "Not Hispanic", sex: "Male", ev: 8 },
+      { id: 2564738, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 7 },
+      { id: 3675849, race: "White", eth: "Not Hispanic", sex: "Female", ev: 7 },
+      { id: 4786950, race: "Asian", eth: "Not Hispanic", sex: "Male", ev: 6 },
+      { id: 5897061, race: "White", eth: "Not Hispanic", sex: "Female", ev: 6 },
+      { id: 6908172, race: "Black or African American", eth: "Hispanic or Latino", sex: "Male", ev: 5 },
+      { id: 7019283, race: "White", eth: "Not Hispanic", sex: "Male", ev: 5 },
+      { id: 8120394, race: "White", eth: "Not Hispanic", sex: "Female", ev: 4 },
+      { id: 9231405, race: "None Indicated", eth: "Not Hispanic", sex: "Female", ev: 4 },
+      { id: 1342516, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 3 },
+    ],
+  },
+  "Fake Variant 2": {
+    fullCohort: 412,
+    conditions: [
+      { name: "Cystic fibrosis", occ: 298, indiv: 251 },
+      { name: "Chronic sinusitis", occ: 203, indiv: 178 },
+      { name: "Bronchiectasis", occ: 187, indiv: 156 },
+      { name: "Pancreatic insufficiency", occ: 165, indiv: 139 },
+      { name: "Gastroesophageal reflux disease", occ: 134, indiv: 112 },
+      { name: "Nasal polyposis", occ: 98, indiv: 87 },
+      { name: "Type 2 diabetes mellitus", occ: 76, indiv: 64 },
+      { name: "Allergic bronchopulmonary aspergillosis", occ: 62, indiv: 55 },
+      { name: "Osteoporosis", occ: 51, indiv: 43 },
+      { name: "Vitamin D deficiency", occ: 48, indiv: 41 },
+      { name: "Distal intestinal obstruction syndrome", occ: 44, indiv: 38 },
+      { name: "CF-related liver disease", occ: 40, indiv: 34 },
+      { name: "Hemoptysis", occ: 36, indiv: 31 },
+      { name: "Pneumothorax", occ: 33, indiv: 28 },
+      { name: "Infertility", occ: 30, indiv: 26 },
+      { name: "Failure to thrive", occ: 27, indiv: 23 },
+      { name: "Malnutrition", occ: 24, indiv: 20 },
+      { name: "Recurrent pneumonia", occ: 22, indiv: 19 },
+      { name: "Digital clubbing", occ: 19, indiv: 16 },
+      { name: "Chronic fatigue", occ: 17, indiv: 14 },
+      { name: "Glucose intolerance", occ: 15, indiv: 13 },
+      { name: "Anxiety disorder", occ: 14, indiv: 12 },
+      { name: "Iron deficiency anemia", occ: 12, indiv: 10 },
+      { name: "Chronic pain syndrome", occ: 10, indiv: 9 },
+      { name: "Electrolyte imbalance", occ: 9, indiv: 8 },
+    ],
+    sex: { Female: 198, Male: 179, "No matching concept": 4 },
+    race: { White: 289, "Black or African American": 54, Asian: 18, "None Indicated": 20 },
+    ethnicity: { "Not Hispanic": 312, "Hispanic/Latino": 79, Unknown: 21 },
+    individuals: [
+      { id: 5018273, race: "White", eth: "Not Hispanic", sex: "Female", ev: 31 },
+      { id: 6029184, race: "White", eth: "Not Hispanic", sex: "Male", ev: 28 },
+      { id: 7038291, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 25 },
+      { id: 8047362, race: "White", eth: "Hispanic or Latino", sex: "Male", ev: 22 },
+      { id: 9056473, race: "White", eth: "Not Hispanic", sex: "Female", ev: 20 },
+      { id: 1065584, race: "Asian", eth: "Not Hispanic", sex: "Male", ev: 18 },
+      { id: 2074695, race: "White", eth: "Not Hispanic", sex: "Female", ev: 16 },
+      { id: 3083706, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 15 },
+      { id: 4092817, race: "White", eth: "Not Hispanic", sex: "Female", ev: 14 },
+      { id: 5101928, race: "None Indicated", eth: "Not Hispanic", sex: "Male", ev: 12 },
+      { id: 6112039, race: "White", eth: "Hispanic or Latino", sex: "Female", ev: 11 },
+      { id: 7123140, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 11 },
+      { id: 8134251, race: "White", eth: "Not Hispanic", sex: "Male", ev: 10 },
+      { id: 9145362, race: "Asian", eth: "Not Hispanic", sex: "Female", ev: 9 },
+      { id: 1156473, race: "White", eth: "Not Hispanic", sex: "Male", ev: 9 },
+      { id: 2167584, race: "Black or African American", eth: "Hispanic or Latino", sex: "Male", ev: 8 },
+      { id: 3178695, race: "White", eth: "Not Hispanic", sex: "Female", ev: 8 },
+      { id: 4189706, race: "None Indicated", eth: "Not Hispanic", sex: "Female", ev: 7 },
+      { id: 5190817, race: "White", eth: "Not Hispanic", sex: "Male", ev: 7 },
+      { id: 6201928, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 6 },
+      { id: 7213039, race: "White", eth: "Not Hispanic", sex: "Male", ev: 6 },
+      { id: 8224140, race: "Asian", eth: "Hispanic or Latino", sex: "Female", ev: 5 },
+      { id: 9235251, race: "White", eth: "Not Hispanic", sex: "Male", ev: 5 },
+      { id: 1246362, race: "White", eth: "Not Hispanic", sex: "Female", ev: 4 },
+      { id: 2257473, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 4 },
+    ],
+  },
+  "Fake Variant 3": {
+    fullCohort: 156,
+    conditions: [
+      { name: "Sickle cell disease", occ: 112, indiv: 98 },
+      { name: "Acute chest syndrome", occ: 87, indiv: 71 },
+      { name: "Iron overload", occ: 65, indiv: 54 },
+      { name: "Pulmonary hypertension", occ: 52, indiv: 43 },
+      { name: "Avascular necrosis", occ: 41, indiv: 36 },
+      { name: "Chronic pain syndrome", occ: 38, indiv: 33 },
+      { name: "Cholelithiasis", occ: 29, indiv: 25 },
+      { name: "Retinopathy", occ: 22, indiv: 19 },
+      { name: "Priapism", occ: 19, indiv: 16 },
+      { name: "Splenic sequestration", occ: 17, indiv: 14 },
+      { name: "Leg ulcers", occ: 15, indiv: 13 },
+      { name: "Stroke", occ: 14, indiv: 12 },
+      { name: "Osteomyelitis", occ: 12, indiv: 10 },
+      { name: "Acute kidney injury", occ: 11, indiv: 9 },
+      { name: "Aplastic crisis", occ: 10, indiv: 8 },
+      { name: "Dactylitis", occ: 9, indiv: 7 },
+      { name: "Delayed growth", occ: 8, indiv: 7 },
+      { name: "Chronic kidney disease", occ: 7, indiv: 6 },
+      { name: "Hepatic sequestration", occ: 6, indiv: 5 },
+      { name: "Cardiomegaly", occ: 5, indiv: 4 },
+      { name: "Sepsis", occ: 5, indiv: 4 },
+      { name: "Deep vein thrombosis", occ: 4, indiv: 3 },
+      { name: "Hearing loss", occ: 3, indiv: 3 },
+      { name: "Cognitive impairment", occ: 3, indiv: 2 },
+      { name: "Enuresis", occ: 2, indiv: 2 },
+    ],
+    sex: { Female: 84, Male: 68, "No matching concept": 4 },
+    race: { "Black or African American": 102, White: 28, Asian: 8, "None Indicated": 6 },
+    ethnicity: { "Not Hispanic": 128, "Hispanic/Latino": 18, Unknown: 10 },
+    individuals: [
+      { id: 6110293, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 19 },
+      { id: 7121304, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 17 },
+      { id: 8132415, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 15 },
+      { id: 9143526, race: "White", eth: "Not Hispanic", sex: "Male", ev: 13 },
+      { id: 1154637, race: "Black or African American", eth: "Hispanic or Latino", sex: "Female", ev: 12 },
+      { id: 2165748, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 11 },
+      { id: 3176859, race: "Asian", eth: "Not Hispanic", sex: "Female", ev: 10 },
+      { id: 4187960, race: "None Indicated", eth: "Not Hispanic", sex: "Male", ev: 8 },
+      { id: 5199071, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 7 },
+      { id: 6200182, race: "White", eth: "Not Hispanic", sex: "Male", ev: 6 },
+      { id: 7211293, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 6 },
+      { id: 8222404, race: "Black or African American", eth: "Hispanic or Latino", sex: "Female", ev: 5 },
+      { id: 9233515, race: "White", eth: "Not Hispanic", sex: "Male", ev: 5 },
+      { id: 1244626, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 5 },
+      { id: 2255737, race: "Asian", eth: "Not Hispanic", sex: "Male", ev: 4 },
+      { id: 3266848, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 4 },
+      { id: 4277959, race: "White", eth: "Not Hispanic", sex: "Male", ev: 3 },
+      { id: 5289060, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 3 },
+      { id: 6290171, race: "None Indicated", eth: "Not Hispanic", sex: "Male", ev: 3 },
+      { id: 7301282, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 2 },
+      { id: 8312393, race: "White", eth: "Not Hispanic", sex: "Female", ev: 2 },
+      { id: 9323504, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 2 },
+      { id: 1334615, race: "Black or African American", eth: "Hispanic or Latino", sex: "Female", ev: 2 },
+      { id: 2345726, race: "White", eth: "Not Hispanic", sex: "Male", ev: 1 },
+      { id: 3356837, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 1 },
+    ],
+  },
+};
+
+const TEAL = ["#003333","#004d4d","#006666","#008080","#009999","#33b3b3"];
+const WARM = ["#7a2800","#cc4400","#ff7519","#ff9a52"];
+
+// ── Chart component ────────────────────────────────────────────────────
+function BarChart({ data, labels, title, colors, id }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (chartRef.current) chartRef.current.destroy();
+    const ctx = canvasRef.current.getContext("2d");
+    chartRef.current = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors.slice(0, labels.length),
+          borderWidth: 0,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            ticks: { font: { size: 11 }, maxRotation: 45, minRotation: 25 },
+            grid: { display: false },
+          },
+          y: {
+            title: { display: true, text: "Individuals", font: { size: 12 } },
+            grid: { color: "#e2e8f0" },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+    return () => { if (chartRef.current) chartRef.current.destroy(); };
+  }, [data, labels, colors]);
+
+  return (
+    <div>
+      <div className="chart-title"><b>{title}</b></div>
+      <canvas ref={canvasRef} id={id} height="220"></canvas>
+    </div>
+  );
+}
+
+// ── Main App ───────────────────────────────────────────────────────────
+function App() {
+  const [variant, setVariant] = useState("Fake Variant 1");
+  const [sex, setSex] = useState("None");
+  const [freq, setFreq] = useState(2);
+  const [temporal, setTemporal] = useState(182);
+  const [cutoff, setCutoff] = useState(25);
+  const [condRows, setCondRows] = useState(15);
+  const [indivRows, setIndivRows] = useState(10);
+  const [results, setResults] = useState(null);
+  const [status, setStatus] = useState("Ready.");
+  const [loading, setLoading] = useState(false);
+
+  const runDashboard = useCallback(() => {
+    setLoading(true);
+    setStatus("Querying BigQuery…");
+    setResults(null);
+
+    setTimeout(() => {
+      setStatus("Applying filters…");
+      setTimeout(() => {
+        const raw = VARIANTS[variant];
+        if (!raw) {
+          setStatus("⚠ No results found.");
+          setLoading(false);
+          return;
+        }
+
+        // Apply sex filter to individuals
+        let indivs = [...raw.individuals];
+        if (sex !== "None") indivs = indivs.filter(i => i.sex === sex);
+
+        // Filtered cohort count
+        const filteredCount = sex === "None"
+          ? raw.fullCohort
+          : Object.entries(raw.sex)
+              .filter(([k]) => k === sex)
+              .reduce((s, [, v]) => s + v, 0);
+
+        // Conditions with cutoff
+        const minIndiv = (cutoff / 100) * filteredCount;
+        const conds = raw.conditions
+          .filter(c => c.indiv >= minIndiv)
+          .slice(0, condRows)
+          .map(c => ({
+            ...c,
+            pct: ((c.indiv / filteredCount) * 100).toFixed(2) + "%",
+          }));
+
+        // Sex counts
+        let sexCounts = Object.entries(raw.sex);
+        if (sex !== "None") sexCounts = sexCounts.filter(([k]) => k === sex || k === "No matching concept");
+
+        setResults({
+          fullCohort: raw.fullCohort,
+          filteredCohort: filteredCount,
+          conditions: conds,
+          sexCounts,
+          race: raw.race,
+          ethnicity: raw.ethnicity,
+          individuals: indivs.slice(0, indivRows),
+        });
+        setStatus("✓ Done.");
+        setLoading(false);
+      }, 600);
+    }, 800);
+  }, [variant, sex, freq, temporal, cutoff, condRows, indivRows]);
+
+  const reset = () => {
+    setSex("None"); setFreq(2); setTemporal(182);
+    setCutoff(25); setCondRows(15); setIndivRows(10);
+    setStatus("Filters reset.");
+  };
+
+  return (
+    <div className="main-wrap">
+      <div className="banner">⚠ SIMULATED OUTPUT — Fake data for demonstration only. Not real participant data. Tables are limited to {MAX_DEMO_ROWS} rows in this demo; the live dashboard supports unlimited rows.</div>
+
+      <div className="two-col" style={{ gap: "14px", alignItems: "flex-start" }}>
+        <div className="card">
+          <div className="card-title">Filters</div>
+          <div className="field-group">
+            <div className="field-label">Variant ID</div>
+            <select value={variant} onChange={e => setVariant(e.target.value)} style={{ width: "100%" }}>
+              {Object.keys(VARIANTS).map(v => <option key={v} value={v}>{v}</option>)}
+            </select>
+            <div className="field-tip">Select a simulated variant to explore</div>
+          </div>
+          <div className="field-group">
+            <div className="field-label">Sex filter</div>
+            <div className="toggle-group">
+              {["None","Male","Female"].map(s => (
+                <button key={s} className={`toggle-btn ${sex===s?"active":""}`}
+                  onClick={() => setSex(s)}>{s}</button>
+              ))}
+            </div>
+          </div>
+          <div className="field-group">
+            <div className="field-label">Frequency threshold</div>
+            <input type="number" value={freq} min={0} max={20}
+              onChange={e => setFreq(+e.target.value)} style={{ width: 80 }} />
+            <div className="field-tip">Min condition occurrences · 0 = disabled · <i>No effect in demo</i></div>
+          </div>
+          <div className="field-group">
+            <div className="field-label">Temporal dedup window (days)</div>
+            <input type="number" value={temporal} min={0} max={365}
+              onChange={e => setTemporal(+e.target.value)} style={{ width: 80 }} />
+            <div className="field-tip">Collapses repeat diagnoses within this window · <i>No effect in demo</i></div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-title">Display Options</div>
+          <div className="field-group">
+            <div className="field-label">Conditions prevalence cutoff (%)</div>
+            <input type="number" value={cutoff} min={0} max={100} step={0.5}
+              onChange={e => setCutoff(+e.target.value)} style={{ width: 80 }} />
+            <div className="field-tip">Hides conditions below X% of filtered cohort</div>
+          </div>
+          <div className="field-group">
+            <div className="field-label">Conditions table rows</div>
+            <input type="number" value={condRows} min={1} max={MAX_DEMO_ROWS}
+              onChange={e => setCondRows(Math.min(+e.target.value, MAX_DEMO_ROWS))} style={{ width: 80 }} />
+            <div className="field-tip">Max {MAX_DEMO_ROWS} in this demo (live dashboard has no limit)</div>
+          </div>
+          <div className="field-group">
+            <div className="field-label">Individuals table rows</div>
+            <input type="number" value={indivRows} min={1} max={MAX_DEMO_ROWS}
+              onChange={e => setIndivRows(Math.min(+e.target.value, MAX_DEMO_ROWS))} style={{ width: 80 }} />
+            <div className="field-tip">Max {MAX_DEMO_ROWS} in this demo (live dashboard has no limit)</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="controls-row">
+        <button className="run-btn" onClick={runDashboard}>▶ Run Dashboard</button>
+        <button className="reset-btn" onClick={reset}>↺ Reset Filters</button>
+        <span className={`status-text ${status.startsWith("✓")?"status-done":""}`}>{status}</span>
+      </div>
+
+      {loading && <div className="loading-bar"><div className="loading-bar-inner" style={{width:"100%"}}></div></div>}
+
+      <hr style={{ border: "none", borderTop: "1px solid #cbd5e1", margin: "8px 0 4px" }} />
+
+      {results && (
+        <div className="fade-in">
+          {/* Run Settings */}
+          <div className="section-hdr">Run Settings</div>
+          <div style={{ marginBottom: 8 }}>
+            <span className="pill"><b>Variant</b> {variant}</span>
+            <span className="pill"><b>Sex filter</b> {sex}</span>
+            <span className="pill"><b>Frequency ≥</b> {freq}</span>
+            <span className="pill"><b>Temporal window</b> {temporal} days</span>
+          </div>
+
+          {/* Cohort + Sex */}
+          <div className="two-col" style={{ alignItems: "flex-start" }}>
+            <div>
+              <div className="section-hdr">Cohort Counts</div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div className="stat-card">
+                  <div className="stat-number">{results.fullCohort.toLocaleString()}</div>
+                  <div className="stat-label">Full Cohort</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-number">{results.filteredCohort.toLocaleString()}</div>
+                  <div className="stat-label">After Filtering</div>
+                  <div className="stat-sub">
+                    {((results.filteredCohort / results.fullCohort) * 100).toFixed(1)}% of full cohort
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="section-hdr">Sex at Birth (unique individuals)</div>
+              <table>
+                <thead><tr><th>Sex at Birth</th><th>Individuals</th></tr></thead>
+                <tbody>
+                  {results.sexCounts.map(([k, v]) => (
+                    <tr key={k}><td>{k}</td><td>{v}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Conditions + Individuals */}
+          <div className="two-col" style={{ alignItems: "flex-start" }}>
+            <div>
+              <div className="section-hdr">
+                Conditions (top {results.conditions.length} · prevalence ≥ {cutoff}% · sorted by individuals)
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table>
+                  <thead><tr><th>Condition</th><th>Occurrences</th><th>Individuals</th><th>% Cohort</th></tr></thead>
+                  <tbody>
+                    {results.conditions.map(c => (
+                      <tr key={c.name}>
+                        <td>{c.name}</td><td>{c.occ}</td><td>{c.indiv}</td><td>{c.pct}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div className="section-hdr">Individuals (top {results.individuals.length} · sorted by event count)</div>
+              <div style={{ overflowX: "auto" }}>
+                <table>
+                  <thead><tr><th>Person ID</th><th>Race</th><th>Ethnicity</th><th>Sex at Birth</th><th>Events</th></tr></thead>
+                  <tbody>
+                    {results.individuals.map(i => (
+                      <tr key={i.id}>
+                        <td>{i.id}</td><td>{i.race}</td><td>{i.eth}</td><td>{i.sex}</td><td>{i.ev}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Demographics */}
+          <div className="section-hdr">Demographics</div>
+          <div className="two-col">
+            <div className="card">
+              <BarChart
+                id="raceChart"
+                title="Race Distribution (Unique Individuals)"
+                labels={Object.keys(results.race)}
+                data={Object.values(results.race)}
+                colors={TEAL}
+              />
+            </div>
+            <div className="card">
+              <BarChart
+                id="ethChart"
+                title="Ethnicity Distribution (Unique Individuals)"
+                labels={Object.keys(results.ethnicity)}
+                data={Object.values(results.ethnicity)}
+                colors={WARM}
+              />
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", margin: "24px 0 8px", fontSize: 11, color: "#94a3b8" }}>
+            Baldridge Lab · Institute for Informatics, Data Science &amp; Biostatistics (I2DB) · WashU School of Medicine
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
