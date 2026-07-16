@@ -4,7 +4,12 @@ A no-code interface for exploring rare variant phenotype profiles across the NIH
 
 **Live demo:** https://ketteringg.github.io/All-of-Us-Dashboard-Demo/
 
-![Dashboard screenshot](./screenshot.png)
+![Dashboard screenshot](./Dashboard.png)
+![Dashboard screenshot](./Cohort_&_Conditions.png)
+![Dashboard screenshot](./Individuals_Table.png)
+![Dashboard screenshot](./Cohort_&_Conditions.png)
+![Dashboard screenshot](./Demographics.png)
+![Dashboard screenshot](./Ethnicity.png)
 
 ## Why this repo exists
 
