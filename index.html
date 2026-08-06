@@ -10,7 +10,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   :root {
     --crimson: #a51417;
@@ -67,7 +71,7 @@
     font-size: 11px;
     opacity: 0.7;
     margin-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.25);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
     padding-top: 8px;
   }
 
@@ -131,7 +135,8 @@
   .field-tip {
     font-size: 11px;
     color: var(--text-dim);
-    margin-top: 2px;
+    margin-top: 4px;
+    line-height: 1.35;
   }
 
   select,
@@ -752,6 +757,62 @@ function BarChart({ data, labels, title, colors, id }) {
   );
 }
 
+// ── Synthetic stratification helpers ────────────────────────────────────
+function scaleAggregateCounts(counts, ratio) {
+  return Object.fromEntries(
+    Object.entries(counts).map(([label, count]) => [
+      label,
+      Math.round(count * ratio),
+    ])
+  );
+}
+
+function getSexFilteredDemoData(raw, sex) {
+  if (sex === "None") {
+    return {
+      filteredCount: raw.fullCohort,
+      conditions: raw.conditions,
+      race: raw.race,
+      ethnicity: raw.ethnicity,
+      individuals: raw.individuals,
+    };
+  }
+
+  const filteredCount = raw.sex[sex] ?? 0;
+  const ratio =
+    raw.fullCohort > 0
+      ? filteredCount / raw.fullCohort
+      : 0;
+
+  const conditions = raw.conditions.map((condition) => {
+    const scaledIndividuals = Math.min(
+      filteredCount,
+      Math.round(condition.indiv * ratio)
+    );
+
+    const scaledOccurrences = Math.max(
+      scaledIndividuals,
+      Math.round(condition.occ * ratio)
+    );
+
+    return {
+      ...condition,
+      indiv: scaledIndividuals,
+      occ: scaledOccurrences,
+    };
+  });
+
+  return {
+    filteredCount,
+    conditions,
+    race: scaleAggregateCounts(raw.race, ratio),
+    ethnicity: scaleAggregateCounts(raw.ethnicity, ratio),
+    individuals: raw.individuals.filter(
+      (individual) => individual.sex === sex
+    ),
+  };
+}
+
 // ── Main App ────────────────────────────────────────────────────────────
 function App() {
   const [variant, setVariant] = useState("Fake Variant 1");
@@ -782,49 +843,45 @@ function App() {
           return;
         }
 
-        // Apply sex filter to individuals.
-        let indivs = [...raw.individuals];
+        const filteredData = getSexFilteredDemoData(raw, sex);
 
-        if (sex !== "None") {
-          indivs = indivs.filter((individual) => individual.sex === sex);
-        }
+        const minIndividuals =
+          (cutoff / 100) * filteredData.filteredCount;
 
-        // Calculate filtered cohort count.
-        const filteredCount =
-          sex === "None"
-            ? raw.fullCohort
-            : Object.entries(raw.sex)
-                .filter(([key]) => key === sex)
-                .reduce((sum, [, value]) => sum + value, 0);
-
-        // Apply the active prevalence cutoff.
-        const minIndividuals = (cutoff / 100) * filteredCount;
-
-        const conditions = raw.conditions
-          .filter((condition) => condition.indiv >= minIndividuals)
+        const conditions = filteredData.conditions
+          .filter(
+            (condition) =>
+              condition.indiv >= minIndividuals
+          )
           .slice(0, condRows)
           .map((condition) => ({
             ...condition,
             pct:
-              ((condition.indiv / filteredCount) * 100).toFixed(2) + "%",
+              filteredData.filteredCount > 0
+                ? (
+                    (condition.indiv /
+                      filteredData.filteredCount) *
+                    100
+                  ).toFixed(2) + "%"
+                : "0.00%",
           }));
 
-        let sexCounts = Object.entries(raw.sex);
-
-        if (sex !== "None") {
-          sexCounts = sexCounts.filter(
-            ([key]) => key === sex || key === "No matching concept"
-          );
-        }
+        const sexCounts =
+          sex === "None"
+            ? Object.entries(raw.sex)
+            : [[sex, raw.sex[sex] ?? 0]];
 
         setResults({
           fullCohort: raw.fullCohort,
-          filteredCohort: filteredCount,
+          filteredCohort: filteredData.filteredCount,
           conditions,
           sexCounts,
-          race: raw.race,
-          ethnicity: raw.ethnicity,
-          individuals: indivs.slice(0, indivRows),
+          race: filteredData.race,
+          ethnicity: filteredData.ethnicity,
+          individuals: filteredData.individuals.slice(
+            0,
+            indivRows
+          ),
         });
 
         setStatus("✓ Done.");
@@ -881,6 +938,7 @@ function App() {
 
           <div className="field-group">
             <div className="field-label">Sex filter</div>
+
             <div className="toggle-group">
               {["None", "Male", "Female"].map((sexOption) => (
                 <button
@@ -893,6 +951,12 @@ function App() {
                   {sexOption}
                 </button>
               ))}
+            </div>
+
+            <div className="field-tip">
+              In this public demo, condition and demographic aggregates are
+              proportionally scaled to the selected fabricated cohort. These
+              values do not represent real sex-specific trends.
             </div>
           </div>
 
@@ -1022,7 +1086,6 @@ function App() {
 
       {results && (
         <div className="fade-in">
-          {/* Run Settings */}
           <div className="section-hdr">Run Settings</div>
 
           <div style={{ marginBottom: 8 }}>
@@ -1045,7 +1108,6 @@ function App() {
             </span>
           </div>
 
-          {/* Cohort and sex summaries */}
           <div>
             <div>
               <div className="section-hdr">Cohort Counts</div>
@@ -1105,7 +1167,6 @@ function App() {
             </div>
           </div>
 
-          {/* Conditions and individuals */}
           <div>
             <div>
               <div className="section-hdr">
@@ -1172,7 +1233,6 @@ function App() {
             </div>
           </div>
 
-          {/* Demographics */}
           <div className="section-hdr">Demographics</div>
 
           <div>
