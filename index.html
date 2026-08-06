@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cohort Dashboard Demo — Baldridge Lab</title>
+<title>All of Us Rare Variant Genotype-Phenotype Explorer — Simulated Demo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   :root {
     --crimson: #a51417;
     --crimson-dark: #8b1114;
@@ -25,33 +26,43 @@
     --success: #15803d;
     --font-serif: 'Source Serif 4', Georgia, serif;
     --font-sans: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
-    --teal-1: #003333; --teal-2: #004d4d; --teal-3: #006666; --teal-4: #008080;
-    --warm-1: #7a2800; --warm-2: #cc4400; --warm-3: #ff7519;
+    --teal-1: #003333;
+    --teal-2: #004d4d;
+    --teal-3: #006666;
+    --teal-4: #008080;
+    --warm-1: #7a2800;
+    --warm-2: #cc4400;
+    --warm-3: #ff7519;
   }
+
   body {
     font-family: var(--font-sans);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
   }
+
   .app-header {
     background: var(--crimson);
     color: white;
     padding: 20px 28px;
     border-bottom: 4px solid var(--crimson-dark);
   }
+
   .app-header h1 {
     font-family: var(--font-serif);
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.01em;
   }
+
   .app-header .subtitle {
     font-size: 13px;
     opacity: 0.85;
     margin-top: 4px;
     font-weight: 300;
   }
+
   .app-header .authors {
     font-size: 11px;
     opacity: 0.7;
@@ -59,11 +70,13 @@
     border-top: 1px solid rgba(255,255,255,0.25);
     padding-top: 8px;
   }
+
   .main-wrap {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 16px;
   }
+
   .banner {
     background: #fef9c3;
     border: 1.5px solid #ca8a04;
@@ -75,6 +88,7 @@
     margin-bottom: 16px;
     text-align: center;
   }
+
   .section-hdr {
     font-size: 14px;
     font-weight: 700;
@@ -86,12 +100,14 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
+
   .card {
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 16px;
     background: var(--surface);
   }
+
   .card-title {
     font-size: 13px;
     font-weight: 700;
@@ -100,19 +116,26 @@
     letter-spacing: 0.05em;
     margin-bottom: 10px;
   }
-  .field-group { margin-bottom: 12px; }
+
+  .field-group {
+    margin-bottom: 12px;
+  }
+
   .field-label {
     font-size: 12px;
     font-weight: 600;
     color: var(--text);
     margin-bottom: 3px;
   }
+
   .field-tip {
     font-size: 11px;
     color: var(--text-dim);
     margin-top: 2px;
   }
-  select, input[type="number"] {
+
+  select,
+  input[type="number"] {
     font-family: var(--font-sans);
     font-size: 13px;
     border: 1px solid var(--border);
@@ -122,11 +145,39 @@
     color: var(--text);
     outline: none;
   }
-  select:focus, input:focus {
+
+  select:focus,
+  input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent-lt);
   }
-  .toggle-group { display: flex; gap: 0; }
+
+  input:disabled {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
+  .production-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .toggle-group {
+    display: flex;
+    gap: 0;
+  }
+
   .toggle-btn {
     font-family: var(--font-sans);
     font-size: 12px;
@@ -138,15 +189,29 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .toggle-btn:first-child { border-radius: 4px 0 0 4px; }
-  .toggle-btn:last-child { border-radius: 0 4px 4px 0; }
-  .toggle-btn:not(:first-child) { border-left: none; }
+
+  .toggle-btn:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+
+  .toggle-btn:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+
+  .toggle-btn:not(:first-child) {
+    border-left: none;
+  }
+
   .toggle-btn.active {
     background: var(--accent);
     color: white;
     border-color: var(--accent);
   }
-  .toggle-btn.active + .toggle-btn { border-left: 1px solid var(--accent); }
+
+  .toggle-btn.active + .toggle-btn {
+    border-left: 1px solid var(--accent);
+  }
+
   .run-btn {
     font-family: var(--font-sans);
     font-size: 13px;
@@ -159,8 +224,15 @@
     cursor: pointer;
     transition: background 0.15s;
   }
-  .run-btn:hover { background: var(--navy); }
-  .run-btn:active { transform: scale(0.98); }
+
+  .run-btn:hover {
+    background: var(--navy);
+  }
+
+  .run-btn:active {
+    transform: scale(0.98);
+  }
+
   .reset-btn {
     font-family: var(--font-sans);
     font-size: 13px;
@@ -172,9 +244,20 @@
     padding: 8px 18px;
     cursor: pointer;
   }
-  .reset-btn:hover { background: #4b5563; }
-  .status-text { font-size: 12px; color: var(--text-dim); }
-  .status-done { color: var(--success); }
+
+  .reset-btn:hover {
+    background: #4b5563;
+  }
+
+  .status-text {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .status-done {
+    color: var(--success);
+  }
+
   .pill {
     display: inline-block;
     background: var(--accent-lt);
@@ -185,7 +268,16 @@
     color: var(--navy);
     margin: 0 6px 6px 0;
   }
-  .pill b { margin-right: 4px; }
+
+  .pill b {
+    margin-right: 4px;
+  }
+
+  .pill i {
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+
   .stat-card {
     border: 1px solid var(--border);
     border-top: 3px solid var(--accent);
@@ -195,12 +287,14 @@
     text-align: center;
     min-width: 140px;
   }
+
   .stat-number {
     font-size: 30px;
     font-weight: 800;
     color: var(--navy);
     font-variant-numeric: tabular-nums;
   }
+
   .stat-label {
     font-size: 11px;
     color: var(--text-dim);
@@ -208,8 +302,18 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
-  .stat-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  table { border-collapse: collapse; width: 100%; }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
   thead th {
     background: var(--navy);
     color: white;
@@ -219,31 +323,61 @@
     padding: 8px 10px;
     text-align: left;
   }
+
   tbody td {
     padding: 7px 10px;
     border-bottom: 1px solid var(--border);
     font-size: 13px;
   }
-  tbody tr:nth-child(even) td { background: var(--bg); }
-  tbody tr:hover td { background: var(--accent-lt); }
+
+  tbody tr:nth-child(even) td {
+    background: var(--bg);
+  }
+
+  tbody tr:hover td {
+    background: var(--accent-lt);
+  }
+
   .chart-title {
     font-size: 13px;
     font-weight: 700;
     color: var(--navy);
     margin-bottom: 8px;
   }
-  .two-col { display: flex; gap: 20px; flex-wrap: wrap; }
-  .two-col > * { flex: 1; min-width: 280px; }
+
+  .two-col {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .two-col > * {
+    flex: 1;
+    min-width: 280px;
+  }
+
   .controls-row {
-    display: flex; gap: 14px; align-items: center;
+    display: flex;
+    gap: 14px;
+    align-items: center;
     margin: 14px 0 6px;
     flex-wrap: wrap;
   }
-  canvas { max-width: 100%; }
-  @media (max-width: 700px) {
-    .two-col { flex-direction: column; }
-    .app-header h1 { font-size: 18px; }
+
+  canvas {
+    max-width: 100%;
   }
+
+  @media (max-width: 700px) {
+    .two-col {
+      flex-direction: column;
+    }
+
+    .app-header h1 {
+      font-size: 18px;
+    }
+  }
+
   .loading-bar {
     height: 3px;
     background: var(--accent-lt);
@@ -251,33 +385,48 @@
     overflow: hidden;
     margin: 10px 0;
   }
+
   .loading-bar-inner {
     height: 100%;
     background: var(--accent);
     border-radius: 2px;
     animation: load 1.8s ease-in-out;
   }
+
   @keyframes load {
     0% { width: 0%; }
     30% { width: 45%; }
     70% { width: 80%; }
     100% { width: 100%; }
   }
+
   .fade-in {
     animation: fadeIn 0.4s ease-out;
   }
+
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
 </head>
-<body>
 
+<body>
 <div class="app-header">
   <h1>An Interactive Cohort Dashboard for Rare Variant Genotype-Phenotype Analysis in the All of Us Research Program</h1>
-  <div class="subtitle">All of Us Controlled Tier — Variant phenotype explorer (Simulated Demo)</div>
-  <div class="authors">Gabriel Kettering, Caitlyn Chitwood, Dustin Baldridge &nbsp;|&nbsp; Baldridge Lab, Institute for Informatics, Data Science &amp; Biostatistics (I2DB), WashU Medicine</div>
+  <div class="subtitle">Public simulated demo of the production Jupyter-based analysis tool</div>
+  <div class="authors">
+    Developed by Gabriel Kettering &nbsp;|&nbsp;
+    Scientific supervision: Dustin Baldridge, MD, PhD &nbsp;|&nbsp;
+    Baldridge Lab, I2DB, WashU Medicine
+  </div>
 </div>
 
 <div id="root"></div>
@@ -285,8 +434,9 @@
 <script type="text/babel">
 const { useState, useRef, useEffect, useCallback } = React;
 
-// ── Fake variant data ──────────────────────────────────────────────────
+// ── Fabricated variant data ─────────────────────────────────────────────
 const MAX_DEMO_ROWS = 25;
+
 const VARIANTS = {
   "Fake Variant 1": {
     fullCohort: 284,
@@ -317,9 +467,22 @@ const VARIANTS = {
       { name: "Hepatic steatosis", occ: 15, indiv: 12 },
       { name: "Benign prostatic hyperplasia", occ: 13, indiv: 11 },
     ],
-    sex: { Female: 138, Male: 97, "No matching concept": 6 },
-    race: { White: 108, "Black or African American": 61, Asian: 21, "None Indicated": 12 },
-    ethnicity: { "Not Hispanic": 189, "Hispanic/Latino": 43, Unknown: 9 },
+    sex: {
+      Female: 138,
+      Male: 97,
+      "No matching concept": 6,
+    },
+    race: {
+      White: 108,
+      "Black or African American": 61,
+      Asian: 21,
+      "None Indicated": 12,
+    },
+    ethnicity: {
+      "Not Hispanic": 189,
+      "Hispanic/Latino": 43,
+      Unknown: 9,
+    },
     individuals: [
       { id: 1002847, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 24 },
       { id: 2019384, race: "White", eth: "Not Hispanic", sex: "Male", ev: 21 },
@@ -348,6 +511,7 @@ const VARIANTS = {
       { id: 1342516, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 3 },
     ],
   },
+
   "Fake Variant 2": {
     fullCohort: 412,
     conditions: [
@@ -377,9 +541,22 @@ const VARIANTS = {
       { name: "Chronic pain syndrome", occ: 10, indiv: 9 },
       { name: "Electrolyte imbalance", occ: 9, indiv: 8 },
     ],
-    sex: { Female: 198, Male: 179, "No matching concept": 4 },
-    race: { White: 289, "Black or African American": 54, Asian: 18, "None Indicated": 20 },
-    ethnicity: { "Not Hispanic": 312, "Hispanic/Latino": 79, Unknown: 21 },
+    sex: {
+      Female: 198,
+      Male: 179,
+      "No matching concept": 4,
+    },
+    race: {
+      White: 289,
+      "Black or African American": 54,
+      Asian: 18,
+      "None Indicated": 20,
+    },
+    ethnicity: {
+      "Not Hispanic": 312,
+      "Hispanic/Latino": 79,
+      Unknown: 21,
+    },
     individuals: [
       { id: 5018273, race: "White", eth: "Not Hispanic", sex: "Female", ev: 31 },
       { id: 6029184, race: "White", eth: "Not Hispanic", sex: "Male", ev: 28 },
@@ -408,6 +585,7 @@ const VARIANTS = {
       { id: 2257473, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 4 },
     ],
   },
+
   "Fake Variant 3": {
     fullCohort: 156,
     conditions: [
@@ -437,9 +615,22 @@ const VARIANTS = {
       { name: "Cognitive impairment", occ: 3, indiv: 2 },
       { name: "Enuresis", occ: 2, indiv: 2 },
     ],
-    sex: { Female: 84, Male: 68, "No matching concept": 4 },
-    race: { "Black or African American": 102, White: 28, Asian: 8, "None Indicated": 6 },
-    ethnicity: { "Not Hispanic": 128, "Hispanic/Latino": 18, Unknown: 10 },
+    sex: {
+      Female: 84,
+      Male: 68,
+      "No matching concept": 4,
+    },
+    race: {
+      "Black or African American": 102,
+      White: 28,
+      Asian: 8,
+      "None Indicated": 6,
+    },
+    ethnicity: {
+      "Not Hispanic": 128,
+      "Hispanic/Latino": 18,
+      Unknown: 10,
+    },
     individuals: [
       { id: 6110293, race: "Black or African American", eth: "Not Hispanic", sex: "Female", ev: 19 },
       { id: 7121304, race: "Black or African American", eth: "Not Hispanic", sex: "Male", ev: 17 },
@@ -470,56 +661,98 @@ const VARIANTS = {
   },
 };
 
-const TEAL = ["#003333","#004d4d","#006666","#008080","#009999","#33b3b3"];
-const WARM = ["#7a2800","#cc4400","#ff7519","#ff9a52"];
+const TEAL = [
+  "#003333",
+  "#004d4d",
+  "#006666",
+  "#008080",
+  "#009999",
+  "#33b3b3",
+];
 
-// ── Chart component ────────────────────────────────────────────────────
+const WARM = [
+  "#7a2800",
+  "#cc4400",
+  "#ff7519",
+  "#ff9a52",
+];
+
+// ── Chart component ─────────────────────────────────────────────────────
 function BarChart({ data, labels, title, colors, id }) {
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
 
   useEffect(() => {
-    if (chartRef.current) chartRef.current.destroy();
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
     const ctx = canvasRef.current.getContext("2d");
+
     chartRef.current = new Chart(ctx, {
       type: "bar",
       data: {
         labels,
-        datasets: [{
-          data,
-          backgroundColor: colors.slice(0, labels.length),
-          borderWidth: 0,
-        }],
+        datasets: [
+          {
+            data,
+            backgroundColor: colors.slice(0, labels.length),
+            borderWidth: 0,
+          },
+        ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
         scales: {
           x: {
-            ticks: { font: { size: 11 }, maxRotation: 45, minRotation: 25 },
-            grid: { display: false },
+            ticks: {
+              font: { size: 11 },
+              maxRotation: 45,
+              minRotation: 25,
+            },
+            grid: {
+              display: false,
+            },
           },
           y: {
-            title: { display: true, text: "Individuals", font: { size: 12 } },
-            grid: { color: "#e2e8f0" },
+            title: {
+              display: true,
+              text: "Individuals",
+              font: { size: 12 },
+            },
+            grid: {
+              color: "#e2e8f0",
+            },
             beginAtZero: true,
           },
         },
       },
     });
-    return () => { if (chartRef.current) chartRef.current.destroy(); };
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
   }, [data, labels, colors]);
 
   return (
     <div>
-      <div className="chart-title"><b>{title}</b></div>
+      <div className="chart-title">
+        <b>{title}</b>
+      </div>
       <canvas ref={canvasRef} id={id} height="220"></canvas>
     </div>
   );
 }
 
-// ── Main App ───────────────────────────────────────────────────────────
+// ── Main App ────────────────────────────────────────────────────────────
 function App() {
   const [variant, setVariant] = useState("Fake Variant 1");
   const [sex, setSex] = useState("None");
@@ -534,205 +767,403 @@ function App() {
 
   const runDashboard = useCallback(() => {
     setLoading(true);
-    setStatus("Querying BigQuery…");
+    setStatus("Loading simulated cohort…");
     setResults(null);
 
     setTimeout(() => {
-      setStatus("Applying filters…");
+      setStatus("Applying simulated filters…");
+
       setTimeout(() => {
         const raw = VARIANTS[variant];
+
         if (!raw) {
           setStatus("⚠ No results found.");
           setLoading(false);
           return;
         }
 
-        // Apply sex filter to individuals
+        // Apply sex filter to individuals.
         let indivs = [...raw.individuals];
-        if (sex !== "None") indivs = indivs.filter(i => i.sex === sex);
 
-        // Filtered cohort count
-        const filteredCount = sex === "None"
-          ? raw.fullCohort
-          : Object.entries(raw.sex)
-              .filter(([k]) => k === sex)
-              .reduce((s, [, v]) => s + v, 0);
+        if (sex !== "None") {
+          indivs = indivs.filter((individual) => individual.sex === sex);
+        }
 
-        // Conditions with cutoff
-        const minIndiv = (cutoff / 100) * filteredCount;
-        const conds = raw.conditions
-          .filter(c => c.indiv >= minIndiv)
+        // Calculate filtered cohort count.
+        const filteredCount =
+          sex === "None"
+            ? raw.fullCohort
+            : Object.entries(raw.sex)
+                .filter(([key]) => key === sex)
+                .reduce((sum, [, value]) => sum + value, 0);
+
+        // Apply the active prevalence cutoff.
+        const minIndividuals = (cutoff / 100) * filteredCount;
+
+        const conditions = raw.conditions
+          .filter((condition) => condition.indiv >= minIndividuals)
           .slice(0, condRows)
-          .map(c => ({
-            ...c,
-            pct: ((c.indiv / filteredCount) * 100).toFixed(2) + "%",
+          .map((condition) => ({
+            ...condition,
+            pct:
+              ((condition.indiv / filteredCount) * 100).toFixed(2) + "%",
           }));
 
-        // Sex counts
         let sexCounts = Object.entries(raw.sex);
-        if (sex !== "None") sexCounts = sexCounts.filter(([k]) => k === sex || k === "No matching concept");
+
+        if (sex !== "None") {
+          sexCounts = sexCounts.filter(
+            ([key]) => key === sex || key === "No matching concept"
+          );
+        }
 
         setResults({
           fullCohort: raw.fullCohort,
           filteredCohort: filteredCount,
-          conditions: conds,
+          conditions,
           sexCounts,
           race: raw.race,
           ethnicity: raw.ethnicity,
           individuals: indivs.slice(0, indivRows),
         });
+
         setStatus("✓ Done.");
         setLoading(false);
       }, 600);
     }, 800);
-  }, [variant, sex, freq, temporal, cutoff, condRows, indivRows]);
+  }, [variant, sex, cutoff, condRows, indivRows]);
 
   const reset = () => {
-    setSex("None"); setFreq(2); setTemporal(182);
-    setCutoff(25); setCondRows(15); setIndivRows(10);
+    setSex("None");
+    setFreq(2);
+    setTemporal(182);
+    setCutoff(25);
+    setCondRows(15);
+    setIndivRows(10);
     setStatus("Filters reset.");
   };
 
   return (
     <div className="main-wrap">
-      <div className="banner">⚠ SIMULATED OUTPUT — Fake data for demonstration only. Not real participant data. Tables are limited to {MAX_DEMO_ROWS} rows in this demo; the live dashboard supports unlimited rows.</div>
+      <div className="banner">
+        ⚠ SIMULATED OUTPUT — Fabricated data for demonstration only. This
+        public version does not query BigQuery or contain real participant
+        data. Tables are limited to {MAX_DEMO_ROWS} rows in the demo.
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "14px",
+        }}
+      >
         <div className="card">
           <div className="card-title">Filters</div>
+
           <div className="field-group">
             <div className="field-label">Variant ID</div>
-            <select value={variant} onChange={e => setVariant(e.target.value)} style={{ width: "100%" }}>
-              {Object.keys(VARIANTS).map(v => <option key={v} value={v}>{v}</option>)}
+            <select
+              value={variant}
+              onChange={(event) => setVariant(event.target.value)}
+              style={{ width: "100%" }}
+            >
+              {Object.keys(VARIANTS).map((variantName) => (
+                <option key={variantName} value={variantName}>
+                  {variantName}
+                </option>
+              ))}
             </select>
-            <div className="field-tip">Select a simulated variant to explore</div>
+            <div className="field-tip">
+              Select a simulated variant to explore
+            </div>
           </div>
+
           <div className="field-group">
             <div className="field-label">Sex filter</div>
             <div className="toggle-group">
-              {["None","Male","Female"].map(s => (
-                <button key={s} className={`toggle-btn ${sex===s?"active":""}`}
-                  onClick={() => setSex(s)}>{s}</button>
+              {["None", "Male", "Female"].map((sexOption) => (
+                <button
+                  key={sexOption}
+                  className={`toggle-btn ${
+                    sex === sexOption ? "active" : ""
+                  }`}
+                  onClick={() => setSex(sexOption)}
+                >
+                  {sexOption}
+                </button>
               ))}
             </div>
           </div>
+
           <div className="field-group">
-            <div className="field-label">Frequency threshold</div>
-            <input type="number" value={freq} min={0} max={20}
-              onChange={e => setFreq(+e.target.value)} style={{ width: 80 }} />
-            <div className="field-tip">Min condition occurrences · 0 = disabled · <i>No effect in demo</i></div>
+            <div className="field-label">
+              Frequency threshold
+              <span className="production-badge">Production only</span>
+            </div>
+            <input
+              type="number"
+              value={freq}
+              min={0}
+              max={20}
+              disabled
+              style={{ width: 80 }}
+            />
+            <div className="field-tip">
+              Implemented in the production tool; displayed here for interface
+              fidelity
+            </div>
           </div>
+
           <div className="field-group">
-            <div className="field-label">Temporal dedup window (days)</div>
-            <input type="number" value={temporal} min={0} max={365}
-              onChange={e => setTemporal(+e.target.value)} style={{ width: 80 }} />
-            <div className="field-tip">Collapses repeat diagnoses within this window · <i>No effect in demo</i></div>
+            <div className="field-label">
+              Temporal dedup window (days)
+              <span className="production-badge">Production only</span>
+            </div>
+            <input
+              type="number"
+              value={temporal}
+              min={0}
+              max={365}
+              disabled
+              style={{ width: 80 }}
+            />
+            <div className="field-tip">
+              Collapses repeat diagnoses in production; inactive with
+              fabricated demo data
+            </div>
           </div>
         </div>
 
         <div className="card">
           <div className="card-title">Display Options</div>
+
           <div className="field-group">
-            <div className="field-label">Conditions prevalence cutoff (%)</div>
-            <input type="number" value={cutoff} min={0} max={100} step={0.5}
-              onChange={e => setCutoff(+e.target.value)} style={{ width: 80 }} />
-            <div className="field-tip">Hides conditions below X% of filtered cohort</div>
+            <div className="field-label">
+              Conditions prevalence cutoff (%)
+            </div>
+            <input
+              type="number"
+              value={cutoff}
+              min={0}
+              max={100}
+              step={0.5}
+              onChange={(event) => setCutoff(Number(event.target.value))}
+              style={{ width: 80 }}
+            />
+            <div className="field-tip">
+              Hides conditions below X% of filtered cohort
+            </div>
           </div>
+
           <div className="field-group">
             <div className="field-label">Conditions table rows</div>
-            <input type="number" value={condRows} min={1} max={MAX_DEMO_ROWS}
-              onChange={e => setCondRows(Math.min(+e.target.value, MAX_DEMO_ROWS))} style={{ width: 80 }} />
-            <div className="field-tip">Max {MAX_DEMO_ROWS} in this demo (live dashboard has no limit)</div>
+            <input
+              type="number"
+              value={condRows}
+              min={1}
+              max={MAX_DEMO_ROWS}
+              onChange={(event) =>
+                setCondRows(
+                  Math.min(Number(event.target.value), MAX_DEMO_ROWS)
+                )
+              }
+              style={{ width: 80 }}
+            />
+            <div className="field-tip">
+              Max {MAX_DEMO_ROWS} in this demo
+            </div>
           </div>
+
           <div className="field-group">
             <div className="field-label">Individuals table rows</div>
-            <input type="number" value={indivRows} min={1} max={MAX_DEMO_ROWS}
-              onChange={e => setIndivRows(Math.min(+e.target.value, MAX_DEMO_ROWS))} style={{ width: 80 }} />
-            <div className="field-tip">Max {MAX_DEMO_ROWS} in this demo (live dashboard has no limit)</div>
+            <input
+              type="number"
+              value={indivRows}
+              min={1}
+              max={MAX_DEMO_ROWS}
+              onChange={(event) =>
+                setIndivRows(
+                  Math.min(Number(event.target.value), MAX_DEMO_ROWS)
+                )
+              }
+              style={{ width: 80 }}
+            />
+            <div className="field-tip">
+              Max {MAX_DEMO_ROWS} in this demo
+            </div>
           </div>
         </div>
       </div>
 
       <div className="controls-row">
-        <button className="run-btn" onClick={runDashboard}>▶ Run Dashboard</button>
-        <button className="reset-btn" onClick={reset}>↺ Reset Filters</button>
-        <span className={`status-text ${status.startsWith("✓")?"status-done":""}`}>{status}</span>
+        <button className="run-btn" onClick={runDashboard}>
+          ▶ Run Simulated Dashboard
+        </button>
+
+        <button className="reset-btn" onClick={reset}>
+          ↺ Reset Filters
+        </button>
+
+        <span
+          className={`status-text ${
+            status.startsWith("✓") ? "status-done" : ""
+          }`}
+        >
+          {status}
+        </span>
       </div>
 
-      {loading && <div className="loading-bar"><div className="loading-bar-inner" style={{width:"100%"}}></div></div>}
-
-      <hr style={{ border: "none", borderTop: "1px solid #cbd5e1", margin: "8px 0 4px" }} />
+      {loading && (
+        <div className="loading-bar">
+          <div className="loading-bar-inner"></div>
+        </div>
+      )}
 
       {results && (
         <div className="fade-in">
           {/* Run Settings */}
           <div className="section-hdr">Run Settings</div>
+
           <div style={{ marginBottom: 8 }}>
-            <span className="pill"><b>Variant</b> {variant}</span>
-            <span className="pill"><b>Sex filter</b> {sex}</span>
-            <span className="pill"><b>Frequency ≥</b> {freq}</span>
-            <span className="pill"><b>Temporal window</b> {temporal} days</span>
+            <span className="pill">
+              <b>Variant</b> {variant}
+            </span>
+
+            <span className="pill">
+              <b>Sex filter</b> {sex}
+            </span>
+
+            <span className="pill">
+              <b>Frequency threshold</b> {freq}{" "}
+              <i>(production only)</i>
+            </span>
+
+            <span className="pill">
+              <b>Temporal window</b> {temporal} days{" "}
+              <i>(production only)</i>
+            </span>
           </div>
 
-          {/* Cohort + Sex */}
+          {/* Cohort and sex summaries */}
           <div>
             <div>
               <div className="section-hdr">Cohort Counts</div>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
                 <div className="stat-card">
-                  <div className="stat-number">{results.fullCohort.toLocaleString()}</div>
+                  <div className="stat-number">
+                    {results.fullCohort.toLocaleString()}
+                  </div>
                   <div className="stat-label">Full Cohort</div>
                 </div>
+
                 <div className="stat-card">
-                  <div className="stat-number">{results.filteredCohort.toLocaleString()}</div>
+                  <div className="stat-number">
+                    {results.filteredCohort.toLocaleString()}
+                  </div>
                   <div className="stat-label">After Filtering</div>
                   <div className="stat-sub">
-                    {((results.filteredCohort / results.fullCohort) * 100).toFixed(1)}% of full cohort
+                    {(
+                      (results.filteredCohort / results.fullCohort) *
+                      100
+                    ).toFixed(1)}
+                    % of full cohort
                   </div>
                 </div>
               </div>
             </div>
+
             <div>
-              <div className="section-hdr">Sex at Birth (unique individuals)</div>
+              <div className="section-hdr">
+                Sex at Birth (unique individuals)
+              </div>
+
               <table>
-                <thead><tr><th>Sex at Birth</th><th>Individuals</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Sex at Birth</th>
+                    <th>Individuals</th>
+                  </tr>
+                </thead>
+
                 <tbody>
-                  {results.sexCounts.map(([k, v]) => (
-                    <tr key={k}><td>{k}</td><td>{v}</td></tr>
+                  {results.sexCounts.map(([label, value]) => (
+                    <tr key={label}>
+                      <td>{label}</td>
+                      <td>{value}</td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Conditions + Individuals */}
+          {/* Conditions and individuals */}
           <div>
             <div>
               <div className="section-hdr">
-                Conditions (top {results.conditions.length} · prevalence ≥ {cutoff}% · sorted by individuals)
+                Conditions (top {results.conditions.length} · prevalence ≥{" "}
+                {cutoff}% · sorted by individuals)
               </div>
+
               <div style={{ overflowX: "auto" }}>
                 <table>
-                  <thead><tr><th>Condition</th><th>Occurrences</th><th>Individuals</th><th>% Cohort</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Condition</th>
+                      <th>Occurrences</th>
+                      <th>Individuals</th>
+                      <th>% Cohort</th>
+                    </tr>
+                  </thead>
+
                   <tbody>
-                    {results.conditions.map(c => (
-                      <tr key={c.name}>
-                        <td>{c.name}</td><td>{c.occ}</td><td>{c.indiv}</td><td>{c.pct}</td>
+                    {results.conditions.map((condition) => (
+                      <tr key={condition.name}>
+                        <td>{condition.name}</td>
+                        <td>{condition.occ}</td>
+                        <td>{condition.indiv}</td>
+                        <td>{condition.pct}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
+
             <div>
-              <div className="section-hdr">Individuals (top {results.individuals.length} · sorted by event count)</div>
+              <div className="section-hdr">
+                Individuals (top {results.individuals.length} · sorted by event
+                count)
+              </div>
+
               <div style={{ overflowX: "auto" }}>
                 <table>
-                  <thead><tr><th>Person ID</th><th>Race</th><th>Ethnicity</th><th>Sex at Birth</th><th>Events</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Person ID</th>
+                      <th>Race</th>
+                      <th>Ethnicity</th>
+                      <th>Sex at Birth</th>
+                      <th>Events</th>
+                    </tr>
+                  </thead>
+
                   <tbody>
-                    {results.individuals.map(i => (
-                      <tr key={i.id}>
-                        <td>{i.id}</td><td>{i.race}</td><td>{i.eth}</td><td>{i.sex}</td><td>{i.ev}</td>
+                    {results.individuals.map((individual) => (
+                      <tr key={individual.id}>
+                        <td>{individual.id}</td>
+                        <td>{individual.race}</td>
+                        <td>{individual.eth}</td>
+                        <td>{individual.sex}</td>
+                        <td>{individual.ev}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -743,6 +1174,7 @@ function App() {
 
           {/* Demographics */}
           <div className="section-hdr">Demographics</div>
+
           <div>
             <div className="card" style={{ marginBottom: 14 }}>
               <BarChart
@@ -753,6 +1185,7 @@ function App() {
                 colors={TEAL}
               />
             </div>
+
             <div className="card">
               <BarChart
                 id="ethChart"
@@ -764,8 +1197,16 @@ function App() {
             </div>
           </div>
 
-          <div style={{ textAlign: "center", margin: "24px 0 8px", fontSize: 11, color: "#94a3b8" }}>
-            Baldridge Lab · Institute for Informatics, Data Science &amp; Biostatistics (I2DB) · WashU School of Medicine
+          <div
+            style={{
+              textAlign: "center",
+              margin: "24px 0 8px",
+              fontSize: 11,
+              color: "#94a3b8",
+            }}
+          >
+            Developed by Gabriel Kettering · Scientific supervision by Dustin
+            Baldridge, MD, PhD · Baldridge Lab · I2DB · WashU Medicine
           </div>
         </div>
       )}
